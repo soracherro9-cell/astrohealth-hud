@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroHealth HUD - Telemetría Avanzada</title>
+    <style>
+        :root {
+            --bg-color: #050b14;
+            --panel-bg: rgba(11, 18, 32, 0.95);
+            --border-glow: #1e3a8a;
+            --accent-cyan: #38bdf8;
+            --accent-alert: #ef4444;
+            --text-main: #FFFFFF;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 15px;
+            background-image: 
+                linear-gradient(rgba(30, 58, 138, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 58, 138, 0.12) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        .hud-grid {
+            display: grid;
+            grid-template-columns: 290px 1fr 350px;
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+            max-width: 1380px;
+            margin: 0 auto;
+        }
+
+        .hud-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 6px;
+            padding: 14px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(30, 58, 138, 0.25);
+        }
+
+        /* Enfoque Dinámico por Zonas */
+        .hud-panel.highlighted {
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 20px rgba(56, 189, 248, 0.4);
+            transform: scale(1.02);
+            background: rgba(14, 31, 56, 0.98);
+        }
+
+        /* Alerta Roja de Emergencia */
+        .hud-panel.alert-zone {
+            border: 2px solid var(--accent-alert) !important;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.4) !important;
+            animation: pulse-alert 1s infinite alternate;
+        }
+
+        @keyframes pulse-alert {
+            0% { background: rgba(127, 29, 29, 0.4); }
+            100% { background: rgba(11, 18, 32, 0.95); }
+        }
+
+        .panel-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Formulario de Ingreso por Teclado */
+        .input-form-panel {
+            grid-column: 1 / span 3;
+            background: rgba(8, 14, 26, 0.98);
+            border: 1px solid var(--accent-cyan);
+            padding: 16px;
+            border-radius: 6px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+
+        .form-group input, .form-group select {
+            background: #030712;
+            border: 1px solid var(--border-glow);
+            color: var(--text-main);
+            padding: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .btn-submit {
+            grid-column: 1 / -1;
+            background: #1e3a8a;
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: 0.2s;
+            margin-top: 5px;
+            border-radius: 4px;
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-cyan);
+            color: #050b14;
+        }
+
+        /* Centro: Silueta Anatómica Real con Láser y Zoom */
+        .body-scan-container {
+            grid-column: 2;
+            grid-row: 2 / span 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 14, 26, 0.7);
+            border: 1px solid var(--border-glow);
+            border-radius: 6px;
+            padding: 20px;
+            position: relative;
+            min-height: 480px;
+            overflow: hidden;
+        }
+
+        .scan-title {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: var(--text-main);
+        }
+
+        /* Silueta Vectorial Real SVG */
+        .human-silhouette-svg {
+            width: 170px;
+            height: 390px;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45));
+            position: relative;
+            z-index: 2;
+        }
+
+        .human-silhouette-svg.zoom-cabeza { transform: scale(1.4) translateY(45px); }
+        .human-silhouette-svg.zoom-pecho { transform: scale(1.4) translateY(10px); }
+        .human-silhouette-svg.zoom-extremidades { transform: scale(1.2) translateY(-20px); }
+
+        .body-zone {
+            fill: #1e293b;
+            stroke: var(--accent-cyan);
+            stroke-width: 1.2;
+            transition: 0.3s;
+        }
+
+        .body-zone:hover {
+            fill: var(--accent-cyan);
+            filter: brightness(1.3);
+            stroke: #ffffff;
+        }
+
+        /* Haz Láser de Escaneo Activo */
+        .laser-beam {
+            position: absolute;
+            width: 80%;
+            height: 3px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 15px var(--accent-cyan), 0 0 30px var(--accent-cyan);
+            top: 10%;
+            left: 10%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 3;
+        }
+
+        .laser-beam.active {
+            opacity: 1;
+            animation: scan-laser 2.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes scan-laser {
+            0% { top: 15%; }
+            100% { top: 85%; }
+        }
+
+        .big-metric {
+            font-size: 34px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin: 5px 0;
+        }
+
+        .ecg-line {
+            width: 100%;
+            height: 40px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--border-glow);
+            position: relative;
+            overflow: hidden;
+            margin-top: 8px;
+            border-radius: 3px;
+        }
+
+        .ecg-wave {
+            position: absolute;
+            top: 0; left: 0;
+            width: 200%; height: 100%;
+            background: repeating-linear-gradient(90deg, transparent, transparent 28px, var(--accent-cyan) 29px, transparent 30px);
+            animation: pulse-ecg 2.5s linear infinite;
+        }
+
+        @keyframes pulse-ecg {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .diagnostic-box {
+            grid-column: 1 / span 3;
+            background: rgba(5, 10, 20, 0.98);
+            border: 1px solid var(--accent-cyan);
+            padding: 16px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-pill {
+            background: #065f46;
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 1px solid #10b981;
+        }
+
+        .history-tag {
+            font-size: 10px;
+            color: var(--text-muted);
+            background: rgba(56, 189, 248, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hud-grid">
+        
+        <!-- MÓDULO DE INGRESO POR TECLADO -->
+        <div class="hud-panel input-form-panel">
+            <div class="panel-title"><span>SISTEMA DE TELEMETRÍA ESPACIAL</span><span>INGRESO MANUAL DE DATOS</span></div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>PRESIÓN ARTERIAL (mmHg)</label>
+                    <input type="text" id="input-bp" value="118/76">
+                </div>
+                <div class="form-group">
+                    <label>FRECUENCIA CARDÍACA (BPM)</label>
+                    <input type="number" id="input-hr" value="72">
+                </div>
+                <div class="form-group">
+                    <label>GLUCOSA (mg/dL)</label>
+                    <input type="number" id="input-glu" value="88">
+                </div>
+                <div class="form-group">
+                    <label>TEMP. CORPORAL (°C)</label>
+                    <input type="number" step="0.1" id="input-temp" value="36.7">
+                </div>
+                <div class="form-group">
+                    <label>HORAS DE SUEÑO</label>
+                    <input type="number" step="0.5" id="input-sleep" value="7.5">
+                </div>
+                <div class="form-group">
+                    <label>ESTADO DE ÁNIMO</label>
+                    <select id="input-mood">
+                        <option value="😌 Calmado">😌 Calmado</option>
+                        <option value="🎯 Enfocado">🎯 Enfocado</option>
+                        <option value="⭐ Energético">⭐ Energético</option>
+                        <option value="🥱 Fatigado">🥱 Fatigado</option>
+                        <option value="😰 Ansioso">😰 Ansioso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>RADIACIÓN (mSv/h)</label>
+                    <input type="number" step="0.01" id="input-rad" value="0.14">
+                </div>
+                <button class="btn-submit" onclick="actualizarDatosTelemetria()">⚡ REGISTRAR Y EJECUTAR ESCANEO CLÍNICO</button>
+            </div>
+        </div>
+
+        <!-- PANEL IZQUIERDO 1: Ritmo Cardíaco -->
+        <div class="hud-panel" id="panel-cardio" style="grid-row: 2;">
+            <div class="panel-title"><span>HR / ECG</span><span>CARDIO-SYS</span></div>
+            <div style="font-size: 11px; color: var(--text-muted);">FRECUENCIA CARDÍACA</div>
+            <div class="big-metric" id="disp-hr">72</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 10px; color: var(--accent-cyan);">BPM [ESTABLE]</span>
+                <span class="history-tag">Pico máx: 94</span>
+            </div>
+            <div class="ecg-line"><div class="ecg-wave"></div></div>
+        </div>
+
+        <!-- PANEL IZQUIERDO 2: Presión y Glucosa -->
+        <div class="hud-panel" id="panel-pressure" style="grid-row: 3;">
+            <div class="panel-title"><span>VASCULAR / METABÓLICO</span><span>MOD-B</span></div>
+            <div style="font-size: 11px; color: var(--text-muted);">PRESIÓN ARTERIAL</div>
+            <div style="font-size: 19px; font-weight: bold; margin: 2px 0;" id="disp-bp">118/76 mmHg</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">GLUCOSA EN SANGRE</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 16px; color: var(--accent-cyan);" id="disp-glu">88 mg/dL</span>
+                <span class="history-tag">Estable</span>
+            </div>
+        </div>
+
+        <!-- CENTRO: SILUETA ANATÓMICA REAL VECTORIAL CON LÁSER Y ZOOM -->
+        <div class="body-scan-container" id="scanContainer">
+            <div class="scan-title">ANATOMICAL WIREFRAME SCAN</div>
+            
+            <div class="laser-beam" id="laserBeam"></div>
+
+            <!-- Silueta Humana Vectorial Detallada en SVG -->
+            <svg class="human-silhouette-svg" id="humanSilhouette" viewBox="0 0 100 220">
+                <!-- CABEZA Y CUELLO -->
+                <path d="M 50 12 C 43 12 39 17 39 24 C 39 31 44 36 50 36 C 56 36 61 31 61 24 C 61 17 57 12 50 12 Z M 46 37 L 46 43 L 54 43 L 54 37 Z" 
+                      class="body-zone" onclick="enfocarZona('cabeza')" title="Sistema Neurológico" />
+                
+                <!-- TÓRAX / PECHO (Cardiovascular) -->
+                <path d="M 37 46 C 35 46 31 52 32 65 C 33 78 36 84 38 84 L 62 84 C 64 84 67 78 68 65 C 69 52 65 46 63 46 Z" 
+                      class="body-zone" onclick="enfocarZona('pecho')" title="Sistema Cardiovascular" />
+                
+                <!-- ABDOMEN Y PELVIS -->
+                <path d="M 39 86 L 61 86 C 62 95 62 108 61 115 L 39 115 C 38 108 38 95 39 86 Z" 
+                      class="body-zone" onclick="enfocarZona('extremidades')" />
+                
+                <!-- EXTREMIDADES SUPERIORES (BRAZOS) -->
+                <path d="M 34 47 L 24 50 L 19 90 L 23 92 L 29 60 L 35 49 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
+                <path d="M 66 47 L 76 50 L 81 90 L 77 92 L 71 60 L 65 49 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
+                
+                <!-- EXTREMIDADES INFERIORES (PIERNAS) -->
+                <path d="M 40 117 L 48 117 L 45 185 L 40 185 L 38 135 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
+                <path d="M 60 117 L 52 117 L 55 185 L 60 185 L 62 135 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
+            </svg>
+            <div style="font-size: 10px; color: var(--accent-cyan); letter-spacing: 1px; margin-top: 8px; z-index: 2;">⚡ HAZ CLIC EN LA SILUETA PARA ZOOM Y LÁSER</div>
+        </div>
+
+        <!-- PANEL DERECHO 1: Temperatura y Sueño (Neurológico) -->
+        <div class="hud-panel" id="panel-neuro" style="grid-row: 2;">
+            <div class="panel-title"><span>NEURO / BIOMETRICS</span><span>WELLBEING</span></div>
+            <div style="font-size: 11px; color: var(--text-muted);">TEMPERATURA CORPORAL</div>
+            <div style="font-size: 22px; font-weight: bold; margin: 3px 0;" id="disp-temp">36.7 °C</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">HORAS DE SUEÑO</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 16px; color: var(--accent-cyan);" id="disp-sleep">7.5 hrs</span>
+                <span class="history-tag">Calidad: 8/10</span>
+            </div>
+        </div>
+
+        <!-- PANEL DERECHO 2: Radiación y Ánimo (Entorno) -->
+        <div class="hud-panel" id="panel-env" style="grid-row: 3;">
+            <div class="panel-title"><span>HABITAT / PSYCHO</span><span>ENV-02</span></div>
+            <div style="font-size: 11px; color: var(--text-muted);">TASA DE RADIACIÓN</div>
+            <div style="font-size: 18px; font-weight: bold; margin: 2px 0;" id="disp-rad">0.14 mSv/h</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">ESTADO DE ÁNIMO</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 15px; color: var(--accent-cyan);" id="disp-mood">😌 Calmado</span>
+                <span class="history-tag">Estable</span>
+            </div>
+        </div>
+
+        <!-- PANEL INFERIOR: Diagnóstico Automatizado -->
+        <div class="diagnostic-box">
+            <div>
+                <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">GUÍA CLÍNICA DE TRATAMIENTO AUTOMATIZADO (NASA HRP)</div>
+                <div id="diagnostico-texto" style="font-size: 13px; margin-top: 4px; color: #dbeafe;">Sistema operativo estable. Seleccione una zona anatómica en la silueta para activar telemetría láser.</div>
+            </div>
+            <div>
+                <span class="status-pill" id="badge-estado">VERDE - ÓPTIMO</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let datosActuales = {
+            bp: "118/76",
+            hr: 72,
+            glu: 88,
+            temp: 36.7,
+            sleep: 7.5,
+            mood: "😌 Calmado",
+            rad: 0.14
+        };
+
+        function actualizarDatosTelemetria() {
+            datosActuales.bp = document.getElementById('input-bp').value;
+            datosActuales.hr = parseFloat(document.getElementById('input-hr').value);
+            datosActuales.glu = parseFloat(document.getElementById('input-glu').value);
+            datosActuales.temp = parseFloat(document.getElementById('input-temp').value);
+            datosActuales.sleep = parseFloat(document.getElementById('input-sleep').value);
+            datosActuales.mood = document.getElementById('input-mood').value;
+            datosActuales.rad = parseFloat(document.getElementById('input-rad').value);
+
+            document.getElementById('disp-hr').innerText = datosActuales.hr;
+            document.getElementById('disp-bp').innerText = datosActuales.bp + " mmHg";
+            document.getElementById('disp-glu').innerText = datosActuales.glu + " mg/dL";
+            document.getElementById('disp-temp').innerText = datosActuales.temp + " °C";
+            document.getElementById('disp-sleep').innerText = datosActuales.sleep + " hrs";
+            document.getElementById('disp-mood').innerText = datosActuales.mood;
+            document.getElementById('disp-rad').innerText = datosActuales.rad + " mSv/h";
+
+            evaluarEstadoClinicoGlobal();
+            alert("⚡ Telemetría registrada y analizada por el motor clínico.");
+        }
+
+        function evaluarEstadoClinicoGlobal() {
+            const txtDiag = document.getElementById('diagnostico-texto');
+            const badge = document.getElementById('badge-estado');
+            const paneles = document.querySelectorAll('.hud-panel');
+
+            paneles.forEach(p => p.classList.remove('alert-zone'));
+
+            if (datosActuales.hr > 100 || datosActuales.sleep < 5 || datosActuales.rad > 0.25 || datosActuales.glu > 140) {
+                txtDiag.innerText = "⚠️ [ALERTA CRÍTICA]: Parámetros fuera de rango seguro. Active protocolo de descanso inmediato y comuníquese con el Cirujano de Vuelo.";
+                badge.style.background = "#7f1d1d";
+                badge.style.color = "#fca5a5";
+                badge.style.borderColor = "#ef4444";
+                badge.innerText = "ROJO - RIESGO";
+                
+                if(datosActuales.hr > 100) document.getElementById('panel-cardio').classList.add('alert-zone');
+            } else {
+                txtDiag.innerText = `💡 Estado estable. Ánimo reportado: ${datosActuales.mood}. Parámetros biológicos dentro de los límites operativos de la misión.`;
+                badge.style.background = "#065f46";
+                badge.style.color = "#34d399";
+                badge.style.borderColor = "#10b981";
+                badge.innerText = "VERDE - ÓPTIMO";
+            }
+        }
+
+        function enfocarZona(zona) {
+            const silhouetteSvg = document.getElementById('humanSilhouette');
+            const laser = document.getElementById('laserBeam');
+            const paneles = document.querySelectorAll('.hud-panel');
+            
+            paneles.forEach(p => p.classList.remove('highlighted'));
+            silhouetteSvg.className.baseVal = "human-silhouette-svg";
+            laser.classList.add('active'); // Activar láser de escaneo
+
+            const txtDiag = document.getElementById('diagnostico-texto');
+
+            if (zona === 'cabeza') {
+                silhouetteSvg.classList.add('zoom-cabeza');
+                document.getElementById('panel-neuro').classList.add('highlighted');
+                document.getElementById('panel-env').classList.add('highlighted');
+                txtDiag.innerText = `🧠 [ESCANEO NEUROLÓGICO Y PSICOSOCIAL]: Horas de sueño: ${datosActuales.sleep}h | Ánimo: ${datosActuales.mood}. Ritmo circadiano estable. Guía: Mantener ciclo de 8h y protocolo de aislamiento acústico.`;
+            } else if (zona === 'pecho') {
+                silhouetteSvg.classList.add('zoom-pecho');
+                document.getElementById('panel-cardio').classList.add('highlighted');
+                document.getElementById('panel-pressure').classList.add('highlighted');
+                txtDiag.innerText = `🫀 [ESCANEO CARDIOVASCULAR]: Frecuencia: ${datosActuales.hr} BPM | Presión: ${datosActuales.bp} mmHg | Glucosa: ${datosActuales.glu} mg/dL. Redistribución de fluidos en microgravedad bajo control.`;
+            } else if (zona === 'extremidades') {
+                silhouetteSvg.classList.add('zoom-extremidades');
+                document.getElementById('panel-neuro').classList.add('highlighted');
+                document.getElementById('panel-cardio').classList.add('highlighted');
+                txtDiag.innerText = `🦾 [ESCANEO FÍSICO / ENTORNO]: Temperatura: ${datosActuales.temp}°C | Tasa de radiación: ${datosActuales.rad} mSv/h. Guía: Completar rutina obligatoria en la máquina ARED.`;
+            }
+        }
+    </script>
+</body>
+</html>
