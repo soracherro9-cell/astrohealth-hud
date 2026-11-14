@@ -75,31 +75,25 @@
             border: 1px solid var(--accent-purple);
         }
 
-        .crew-selector {
+        .crew-input-row {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 12px;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             border-bottom: 1px dashed rgba(56, 189, 248, 0.2);
             align-items: center;
         }
 
-        .crew-btn {
-            background: #1e293b;
+        .crew-input-row input {
+            background: #020617;
+            border: 1px solid var(--accent-cyan);
             color: var(--text-main);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 5px 12px;
-            border-radius: 6px;
-            cursor: pointer;
+            padding: 7px 12px;
             font-family: inherit;
-            font-size: 11px;
-            transition: 0.2s;
-        }
-
-        .crew-btn:hover, .crew-btn.active {
-            background: var(--accent-purple);
-            color: #fff;
-            border-color: var(--accent-purple);
+            font-size: 13px;
+            border-radius: 6px;
+            outline: none;
+            width: 250px;
             font-weight: bold;
         }
 
@@ -242,7 +236,7 @@
             stroke-width: 1;
         }
 
-        /* Contramedidas Activas (Botones interactivos) */
+        /* Contramedidas Activas */
         .tools-row {
             display: flex;
             gap: 10px;
@@ -324,18 +318,18 @@
 
     <div class="hud-container">
         
-        <!-- PANEL SUPERIOR: MATRIZ EMOCIONAL, ESTRÉS Y PERFILES -->
+        <!-- PANEL SUPERIOR: NOMBRE LIBRE, ESTRÉS Y EMOCIONES -->
         <div class="hud-panel input-form-panel">
             <div class="panel-title">
                 <span>🧠 ASTROMIND ADVANCED: SALUD MENTAL Y RENDIMIENTO COGNITIVO</span>
                 <span>NASA HRP - BEHAVIORAL HEALTH SYSTEM</span>
             </div>
             
-            <div class="crew-selector">
-                <span style="font-size: 11px; color: var(--text-muted);">PERFILES DE TRIPULACIÓN:</span>
-                <button class="crew-btn active" onclick="cargarPerfil('commander')">Commander Vance</button>
-                <button class="crew-btn" onclick="cargarPerfil('pilot')">Pilot Connor</button>
-                <button class="crew-btn" onclick="cargarPerfil('specialist')">Specialist Chen</button>
+            <!-- Campo libre para ingresar el nombre del astronauta -->
+            <div class="crew-input-row">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: bold;">NOMBRE DEL TRIPULANTE:</span>
+                <input type="text" id="input-astronaut-name" value="Commander Alex Vance" placeholder="Ej: Soraya Contreras" oninput="actualizarNombreTripulante()">
+                <span style="font-size: 10px; color: var(--accent-cyan);">✨ Escribe el nombre que desees para actualizar el reporte</span>
             </div>
 
             <!-- Slidómetro de Estrés -->
@@ -351,7 +345,7 @@
                 </div>
             </div>
 
-            <!-- Selector visual de ánimo con Emojis -->
+            <!-- Selector visual de ánimo -->
             <label style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 12px; margin-bottom: 6px; font-weight: 600;">ESTADO EMOCIONAL ACTUAL (AUTORREPORTE)</label>
             <div class="mood-selector-container">
                 <div class="mood-card selected" onclick="seleccionarMood('😌 Calmado y en paz', this)">
@@ -377,7 +371,7 @@
             </div>
         </div>
 
-        <!-- PANEL IZQUIERDO 1: Termómetro de Cortisol y Estrés -->
+        <!-- PANEL IZQUIERDO 1: Termómetro de Cortisol -->
         <div class="hud-panel" style="grid-row: 2;">
             <div class="panel-title"><span>BIOMARCADORES</span><span>CORTISOL & TENSIÓN</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">ESTIMACIÓN DE CORTISOL</div>
@@ -388,7 +382,7 @@
             </div>
         </div>
 
-        <!-- PANEL IZQUIERDO 2: Análisis de Sueño y Circadiano -->
+        <!-- PANEL IZQUIERDO 2: Análisis de Sueño -->
         <div class="hud-panel" style="grid-row: 3;">
             <div class="panel-title"><span>CICLO CIRCADIANO</span><span>SUEÑO</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">HORAS DE DESCANSO REAL</div>
@@ -402,27 +396,27 @@
             </div>
         </div>
 
-        <!-- PANEL IZQUIERDO 3: Historial de Picos de Estrés -->
+        <!-- PANEL IZQUIERDO 3: Historial de Picos -->
         <div class="hud-panel" style="grid-row: 4;">
             <div class="panel-title"><span>HISTORIAL DE PICOS</span><span>TENDENCIAS</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">MÁXIMA TENSIÓN (ÚLTIMAS 24H)</div>
-            <div style="font-size: 18px; font-weight: bold; margin-top: 4px; color: var(--accent-warning);" id="disp-peak">Nivel 4 / 10 (Durante EVA)</div>
+            <div style="font-size: 18px; font-weight: bold; margin-top: 4px; color: var(--accent-warning);" id="disp-peak">Nivel 4 / 10 (Operativo)</div>
             <div class="sub-metric-list">
                 • Frecuencia de Picos: <b style="color: #fff;">1 evento leve</b><br>
                 • Recuperación post-estrés: <b style="color: var(--accent-success);">Rápida (&lt;15 min)</b>
             </div>
         </div>
 
-        <!-- CENTRO: SILUETA ANATÓMICA INTERACTIVA MULTIZONA -->
+        <!-- CENTRO: SILUETA ANATÓMICA INTERACTIVA -->
         <div class="body-scan-container">
-            <div class="scan-title">MAPA INTERACTIVO DE SISTEMAS CONDUCTUALES</div>
+            <div class="scan-title" id="scan-title-label">MAPA CONDUCTUAL: Commander Alex Vance</div>
             
             <svg class="human-silhouette-svg" viewBox="0 0 100 220">
-                <!-- CABEZA (Neurológico / Cognitivo / Sueño) -->
+                <!-- CABEZA -->
                 <path d="M 50 12 C 43 12 39 17 39 24 C 39 31 44 36 50 36 C 56 36 61 31 61 24 C 61 17 57 12 50 12 Z M 46 37 L 46 43 L 54 43 L 54 37 Z" 
                       class="interactive-zone" onclick="enfocarSistema('cabeza')" title="Sistema Neurológico y Emocional" />
                 
-                <!-- PECHO (Cardiovascular / Ansiedad) -->
+                <!-- PECHO -->
                 <path d="M 37 46 C 35 46 31 52 32 65 C 33 78 36 84 38 84 L 62 84 C 64 84 67 78 68 65 C 69 52 65 46 63 46 Z" 
                       class="interactive-zone" onclick="enfocarSistema('pecho')" title="Sistema Cardiorrespiratorio" />
                 
@@ -434,7 +428,7 @@
                 <path d="M 60 117 L 52 117 L 55 185 L 60 185 L 62 135 Z" class="body-zone-other" />
             </svg>
 
-            <!-- Botones de contramedidas interactivas directas -->
+            <!-- Botones de contramedidas -->
             <div class="tools-row">
                 <button class="action-tool-btn" onclick="iniciarRespiracion()">🧘 Respiro-Guía (4-7-8)</button>
                 <button class="action-tool-btn" onclick="activarAudioEspacial()">🎧 Audio Anti-Estrés</button>
@@ -443,7 +437,7 @@
             <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 10px; font-weight: bold; text-align: center;">⚡ HAZ CLIC EN LA CABEZA O EL PECHO PARA ESCANEAR ESOS SISTEMAS</div>
         </div>
 
-        <!-- PANEL DERECHO 1: Rendimiento y Memoria de Trabajo -->
+        <!-- PANEL DERECHO 1: Rendimiento -->
         <div class="hud-panel" style="grid-row: 2;">
             <div class="panel-title"><span>FUNCIONES EJECUTIVAS</span><span>COGNICIÓN</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">MEMORIA DE TRABAJO & ATENCIÓN</div>
@@ -454,7 +448,7 @@
             </div>
         </div>
 
-        <!-- PANEL DERECHO 2: Clima Emocional Registrado -->
+        <!-- PANEL DERECHO 2: Clima Emocional -->
         <div class="hud-panel" style="grid-row: 3;">
             <div class="panel-title"><span>AUTORREPORTE</span><span>CLIMA EMOCIONAL</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">ESTADO SELECCIONADO</div>
@@ -464,7 +458,7 @@
             </div>
         </div>
 
-        <!-- PANEL DERECHO 3: Alertas de Cabina y Soporte -->
+        <!-- PANEL DERECHO 3: Soporte -->
         <div class="hud-panel" style="grid-row: 4;">
             <div class="panel-title"><span>SOPORTE PSICOLÓGICO</span><span>ENLACE TIERRA</span></div>
             <div style="font-size: 10px; color: var(--text-muted);">ESTADO DE ENLACE CON HOUSTON</div>
@@ -474,10 +468,10 @@
             </div>
         </div>
 
-        <!-- PANEL INFERIOR: GUÍA DE CONTRAMEDIDA Y DIAGNÓSTICO -->
+        <!-- PANEL INFERIOR -->
         <div class="diagnostic-box">
             <div>
-                <div style="font-size: 10px; color: var(--accent-purple); letter-spacing: 1.5px; font-weight: bold;">PROTOCOLO DE CONTRAMEDIDA CONDUCTUAL (NASA HRP GUIDELINES)</div>
+                <div style="font-size: 10px; color: var(--accent-purple); letter-spacing: 1.5px; font-weight: bold;" id="protocol-title">PROTOCOLO DE CONTRAMEDIDA CONDUCTUAL (NASA HRP GUIDELINES)</div>
                 <div id="diagnostico-texto" style="font-size: 13px; margin-top: 4px; color: #dbeafe;">Tripulante estable. El equilibrio entre estrés, sueño y rendimiento cognitivo es óptimo para operar en órbita.</div>
             </div>
             <div>
@@ -488,32 +482,20 @@
     </div>
 
     <script>
-        // Perfiles preconfigurados para simular la tripulación
-        const perfiles = {
-            commander: { stress: 3, sleep: 7.5, mood: "😌 Calmado y en paz", peak: "Nivel 4 (EVA)", cog: 96, cortisol: "12.4 µg/dL" },
-            pilot: { stress: 8, sleep: 4.5, mood: "😰 Ansiedad / Tensión", peak: "Nivel 9 (Maniobra)", cog: 72, cortisol: "28.6 µg/dL (Elevado)" },
-            specialist: { stress: 2, sleep: 8.5, mood: "🎯 Altamente Enfocado", peak: "Nivel 2 (Rutina)", cog: 99, cortisol: "10.1 µg/dL" }
+        let estadoActual = {
+            nombre: "Commander Alex Vance",
+            stress: 3,
+            sleep: 7.5,
+            mood: "😌 Calmado y en paz",
+            peak: "Nivel 4 (Operativo)",
+            cog: 96,
+            cortisol: "12.4 µg/dL"
         };
 
-        let estadoActual = { ...perfiles.commander };
-
-        function cargarPerfil(nombrePerfil) {
-            document.querySelectorAll('.crew-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-
-            estadoActual = { ...perfiles[nombrePerfil] };
-            
-            // Actualizar controles visuales
-            document.getElementById('input-stress-slider').value = estadoActual.stress;
-            document.getElementById('input-sleep').value = estadoActual.sleep;
-            cambiarEstres(estadoActual.stress, false);
-            
-            // Actualizar textos
-            document.getElementById('disp-mood').innerText = estadoActual.mood;
-            document.getElementById('disp-peak').innerText = estadoActual.peak;
-            document.getElementById('disp-cognitive').innerText = estadoActual.cog + " %";
-            document.getElementById('disp-cortisol-val').innerText = estadoActual.cortisol;
-
+        function actualizarNombreTripulante() {
+            const nombreIngresado = document.getElementById('input-astronaut-name').value;
+            estadoActual.nombre = nombreIngresado ? nombreIngresado : "Tripulante sin nombre";
+            document.getElementById('scan-title-label').innerText = `MAPA CONDUCTUAL: ${estadoActual.nombre}`;
             actualizarMetricas();
         }
 
@@ -525,7 +507,7 @@
             actualizarMetricas();
         }
 
-        function cambiarEstres(val, manual = true) {
+        function cambiarEstres(val) {
             val = parseInt(val);
             estadoActual.stress = val;
             document.getElementById('stress-num-display').innerText = val;
@@ -542,12 +524,14 @@
                 txtStatus.style.color = "var(--accent-alert)";
             }
 
-            if(manual) {
-                // Ajustar cortisol dinámicamente si cambia el slider manualmente
-                let cortisolCalc = (10 + (val * 2.2)).toFixed(1);
-                estadoActual.cortisol = cortisolCalc + " µg/dL" + (val > 7 ? " (Crítico)" : "");
-                document.getElementById('disp-cortisol-val').innerText = estadoActual.cortisol;
-            }
+            // Ajustar cortisol dinámicamente según el slider
+            let cortisolCalc = (10 + (val * 2.2)).toFixed(1);
+            estadoActual.cortisol = cortisolCalc + " µg/dL" + (val > 7 ? " (Crítico)" : "");
+            document.getElementById('disp-cortisol-val').innerText = estadoActual.cortisol;
+
+            // Ajustar cognición estimada
+            estadoActual.cog = Math.max(100 - (val * 4), 40);
+            document.getElementById('disp-cognitive').innerText = estadoActual.cog + " %";
 
             actualizarMetricas();
         }
@@ -573,11 +557,11 @@
             const badge = document.getElementById('badge-estado');
 
             if (estadoActual.stress >= 7 || estadoActual.sleep < 5 || estadoActual.mood.includes("Ansiedad")) {
-                txtDiag.innerText = "⚠️ [ALERTA DE SALUD CONDUCTUAL]: Sobrecarga de estrés y/o privación de sueño detectada. Protocolo NASA HRP requerido: Iniciar ejercicio de respiración guiada (4-7-8) y programar revisión con el psicólogo de vuelo en tierra.";
+                txtDiag.innerText = `⚠️ [ALERTA DE SALUD CONDUCTUAL para ${estadoActual.nombre}]: Sobrecarga de estrés y/o privación de sueño detectada. Protocolo NASA HRP requerido: Iniciar ejercicio de respiración guiada (4-7-8) y programar revisión con el psicólogo de vuelo.`;
                 badge.className = "status-pill alert";
                 badge.innerText = "ATENCIÓN PSICOLÓGICA REQUERIDA";
             } else {
-                txtDiag.innerText = `💡 Estado mental favorable. Tripulante en condiciones óptimas. Ánimo: ${estadoActual.mood}. El rendimiento cognitivo se mantiene en niveles seguros.`;
+                txtDiag.innerText = `💡 Estado mental favorable para ${estadoActual.nombre}. El equilibrio entre estrés, sueño y rendimiento cognitivo es óptimo para operar en órbita.`;
                 badge.className = "status-pill";
                 badge.innerText = "MENTE ÓPTIMA Y EQUILIBRADA";
             }
@@ -586,22 +570,22 @@
         function enfocarSistema(sistema) {
             const txtDiag = document.getElementById('diagnostico-texto');
             if (sistema === 'cabeza') {
-                txtDiag.innerText = `🧠 [ANÁLISIS NEUROLÓGICO Y CEREBRAL]: Nivel de estrés en ${estadoActual.stress}/10. Las funciones ejecutivas y la memoria de trabajo operan al ${estadoActual.cog}%. Recomendación: Mantener ciclos de descanso circadiano estrictos.`;
+                txtDiag.innerText = `🧠 [ANÁLISIS NEUROLÓGICO DE ${estadoActual.nombre.toUpperCase()}]: Nivel de estrés en ${estadoActual.stress}/10. Las funciones ejecutivas operan al ${estadoActual.cog}%. Recomendación: Mantener ciclos de descanso circadiano estrictos.`;
             } else if (sistema === 'pecho') {
-                txtDiag.innerText = `🫀 [ANÁLISIS CARDIORRESPIRATORIO Y ANSIEDAD]: La variabilidad de la frecuencia cardíaca muestra respuesta al estrés actual. Si hay tensión, la respiración 4-7-8 reducirá la frecuencia cardíaca en menos de 3 minutos.`;
+                txtDiag.innerText = `🫀 [ANÁLISIS CARDIORRESPIRATORIO]: La variabilidad de la frecuencia cardíaca de ${estadoActual.nombre} muestra respuesta al entorno. Si hay tensión, la respiración 4-7-8 reducirá la frecuencia cardíaca en menos de 3 minutos.`;
             }
         }
 
         function iniciarRespiracion() {
             const txtDiag = document.getElementById('diagnostico-texto');
-            txtDiag.innerText = "🧘 [SESIÓN 4-7-8 ACTIVA]: Inhale aire profundamente durante 4 segundos... Mantenga la respiración durante 7 segundos... Exhale con calma durante 8 segundos. Repita 4 veces.";
-            alert("🧘 Modo Respiro-Guía NASA activado. Siga las instrucciones del panel inferior.");
+            txtDiag.innerText = `🧘 [SESIÓN 4-7-8 ACTIVA PARA ${estadoActual.nombre.toUpperCase()}]: Inhale aire profundamente durante 4 segundos... Mantenga la respiración durante 7 segundos... Exhale con calma durante 8 segundos.`;
+            alert(`🧘 Modo Respiro-Guía NASA activado para ${estadoActual.nombre}. Siga el ritmo de relajación.`);
         }
 
         function activarAudioEspacial() {
             const txtDiag = document.getElementById('diagnostico-texto');
-            txtDiag.innerText = "🎧 [AUDIO ANTI-ESTRÉS ACTIVADO]: Reproduciendo frecuencias binaurales y sonido de lluvia en los módulos presurizados de la nave para inducir ondas cerebrales alfa de relajación.";
-            alert("🎧 Audio espacial de relajación activado en el comunicador del tripulante.");
+            txtDiag.innerText = `🎧 [AUDIO ANTI-ESTRÉS ACTIVADO]: Reproduciendo frecuencias binaurales para ${estadoActual.nombre} en los módulos presurizados para inducir ondas cerebrales alfa.`;
+            alert(`🎧 Audio espacial de relajación activado para ${estadoActual.nombre}.`);
         }
     </script>
 </body>
