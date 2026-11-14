@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AstroHealth HUD - Telemetría Avanzada</title>
+    <title>AstroHealth HUD - Telemetría Espacial Avanzada</title>
     <style>
         :root {
-            --bg-color: #050b14;
-            --panel-bg: rgba(11, 18, 32, 0.95);
+            --bg-color: #030712;
+            --panel-bg: rgba(10, 15, 30, 0.95);
             --border-glow: #1e3a8a;
             --accent-cyan: #38bdf8;
             --accent-alert: #ef4444;
+            --accent-warning: #f59e0b;
             --text-main: #FFFFFF;
             --text-muted: #94a3b8;
         }
@@ -22,48 +23,48 @@
             margin: 0;
             padding: 15px;
             background-image: 
-                linear-gradient(rgba(30, 58, 138, 0.12) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(30, 58, 138, 0.12) 1px, transparent 1px);
+                linear-gradient(rgba(30, 58, 138, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 58, 138, 0.1) 1px, transparent 1px);
             background-size: 25px 25px;
         }
 
         .hud-grid {
             display: grid;
-            grid-template-columns: 290px 1fr 350px;
+            grid-template-columns: 300px 1fr 360px;
             grid-template-rows: auto auto auto;
             gap: 15px;
-            max-width: 1380px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .hud-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-glow);
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 14px;
             position: relative;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(30, 58, 138, 0.25);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(30, 58, 138, 0.2);
         }
 
         /* Enfoque Dinámico por Zonas */
         .hud-panel.highlighted {
             border: 2px solid var(--accent-cyan);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 20px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.6), inset 0 0 20px rgba(56, 189, 248, 0.4);
             transform: scale(1.02);
-            background: rgba(14, 31, 56, 0.98);
+            background: rgba(13, 31, 58, 0.98);
         }
 
         /* Alerta Roja de Emergencia */
         .hud-panel.alert-zone {
             border: 2px solid var(--accent-alert) !important;
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.4) !important;
-            animation: pulse-alert 1s infinite alternate;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(239, 68, 68, 0.5) !important;
+            animation: pulse-alert 0.8s infinite alternate;
         }
 
         @keyframes pulse-alert {
-            0% { background: rgba(127, 29, 29, 0.4); }
-            100% { background: rgba(11, 18, 32, 0.95); }
+            0% { background: rgba(127, 29, 29, 0.5); }
+            100% { background: rgba(10, 15, 30, 0.95); }
         }
 
         .panel-title {
@@ -78,20 +79,47 @@
             justify-content: space-between;
         }
 
-        /* Formulario de Ingreso por Teclado */
+        /* Panel de Control y Formulario */
         .input-form-panel {
             grid-column: 1 / span 3;
-            background: rgba(8, 14, 26, 0.98);
+            background: rgba(6, 11, 22, 0.98);
             border: 1px solid var(--accent-cyan);
             padding: 16px;
-            border-radius: 6px;
+            border-radius: 8px;
+        }
+
+        .crew-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-glow);
+            align-items: center;
+        }
+
+        .crew-btn {
+            background: #1e293b;
+            color: var(--text-main);
+            border: 1px solid var(--border-glow);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            transition: 0.2s;
+        }
+
+        .crew-btn:hover, .crew-btn.active {
+            background: var(--accent-cyan);
+            color: #030712;
+            border-color: var(--accent-cyan);
+            font-weight: bold;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
-            margin-top: 8px;
         }
 
         .form-group {
@@ -107,7 +135,7 @@
         }
 
         .form-group input, .form-group select {
-            background: #030712;
+            background: #020617;
             border: 1px solid var(--border-glow);
             color: var(--text-main);
             padding: 6px;
@@ -134,10 +162,10 @@
 
         .btn-submit:hover {
             background: var(--accent-cyan);
-            color: #050b14;
+            color: #030712;
         }
 
-        /* Centro: Silueta Anatómica Real con Láser y Zoom */
+        /* Centro: Silueta con Radar Biométrico y Zoom */
         .body-scan-container {
             grid-column: 2;
             grid-row: 2 / span 2;
@@ -145,12 +173,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(8, 14, 26, 0.7);
+            background: rgba(6, 11, 22, 0.75);
             border: 1px solid var(--border-glow);
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 20px;
             position: relative;
-            min-height: 480px;
+            min-height: 500px;
             overflow: hidden;
         }
 
@@ -163,20 +191,46 @@
             color: var(--text-main);
         }
 
+        /* Radar Concéntrico de Escaneo */
+        .radar-effect {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 1px dashed rgba(56, 189, 248, 0.3);
+            border-radius: 50%;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .radar-effect.active {
+            opacity: 1;
+            animation: radar-pulse 2s infinite linear;
+        }
+
+        @keyframes radar-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 0 25px rgba(56, 189, 248, 0); }
+            100% { transform: translate(-50%, -50%) scale(0.8); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
         /* Silueta Vectorial Real SVG */
         .human-silhouette-svg {
-            width: 170px;
-            height: 390px;
+            width: 180px;
+            height: 400px;
             cursor: pointer;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45));
+            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.5));
             position: relative;
             z-index: 2;
         }
 
-        .human-silhouette-svg.zoom-cabeza { transform: scale(1.4) translateY(45px); }
-        .human-silhouette-svg.zoom-pecho { transform: scale(1.4) translateY(10px); }
-        .human-silhouette-svg.zoom-extremidades { transform: scale(1.2) translateY(-20px); }
+        .human-silhouette-svg.zoom-cabeza { transform: scale(1.45) translateY(45px); }
+        .human-silhouette-svg.zoom-pecho { transform: scale(1.45) translateY(10px); }
+        .human-silhouette-svg.zoom-extremidades { transform: scale(1.2) translateY(-25px); }
 
         .body-zone {
             fill: #1e293b;
@@ -187,18 +241,18 @@
 
         .body-zone:hover {
             fill: var(--accent-cyan);
-            filter: brightness(1.3);
+            filter: brightness(1.4);
             stroke: #ffffff;
         }
 
-        /* Haz Láser de Escaneo Activo */
+        /* Haz Láser */
         .laser-beam {
             position: absolute;
             width: 80%;
             height: 3px;
             background: var(--accent-cyan);
             box-shadow: 0 0 15px var(--accent-cyan), 0 0 30px var(--accent-cyan);
-            top: 10%;
+            top: 15%;
             left: 10%;
             pointer-events: none;
             opacity: 0;
@@ -207,12 +261,12 @@
 
         .laser-beam.active {
             opacity: 1;
-            animation: scan-laser 2.2s ease-in-out infinite alternate;
+            animation: scan-laser 2s ease-in-out infinite alternate;
         }
 
         @keyframes scan-laser {
-            0% { top: 15%; }
-            100% { top: 85%; }
+            0% { top: 18%; }
+            100% { top: 82%; }
         }
 
         .big-metric {
@@ -230,7 +284,7 @@
             position: relative;
             overflow: hidden;
             margin-top: 8px;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         .ecg-wave {
@@ -238,7 +292,7 @@
             top: 0; left: 0;
             width: 200%; height: 100%;
             background: repeating-linear-gradient(90deg, transparent, transparent 28px, var(--accent-cyan) 29px, transparent 30px);
-            animation: pulse-ecg 2.5s linear infinite;
+            animation: pulse-ecg 2.2s linear infinite;
         }
 
         @keyframes pulse-ecg {
@@ -246,12 +300,30 @@
             100% { transform: translateX(-50%); }
         }
 
+        /* Barras de progreso de salud interactiva */
+        .stat-bar-container {
+            width: 100%;
+            background: #020617;
+            border: 1px solid var(--border-glow);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            background: var(--accent-cyan);
+            width: 70%;
+            transition: width 0.5s ease;
+        }
+
         .diagnostic-box {
             grid-column: 1 / span 3;
-            background: rgba(5, 10, 20, 0.98);
+            background: rgba(3, 7, 18, 0.98);
             border: 1px solid var(--accent-cyan);
             padding: 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -282,9 +354,18 @@
 
     <div class="hud-grid">
         
-        <!-- MÓDULO DE INGRESO POR TECLADO -->
+        <!-- MÓDULO DE INGRESO Y PERFILES DE TRIPULACIÓN -->
         <div class="hud-panel input-form-panel">
-            <div class="panel-title"><span>SISTEMA DE TELEMETRÍA ESPACIAL</span><span>INGRESO MANUAL DE DATOS</span></div>
+            <div class="panel-title"><span>SISTEMA DE TELEMETRÍA ESPACIAL</span><span>SELECCIÓN DE TRIPULANTE O INGRESO MANUAL</span></div>
+            
+            <!-- Selector rápido de astronautas -->
+            <div class="crew-selector">
+                <span style="font-size: 11px; color: var(--text-muted);">PERFILES RÁPIDOS:</span>
+                <button class="crew-btn active" onclick="cargarAstronauta('commander')">Commander Vance</button>
+                <button class="crew-btn" onclick="cargarAstronauta('pilot')">Pilot Connor</button>
+                <button class="crew-btn" onclick="cargarAstronauta('specialist')">Specialist Chen</button>
+            </div>
+
             <div class="form-grid">
                 <div class="form-group">
                     <label>PRESIÓN ARTERIAL (mmHg)</label>
@@ -320,7 +401,7 @@
                     <label>RADIACIÓN (mSv/h)</label>
                     <input type="number" step="0.01" id="input-rad" value="0.14">
                 </div>
-                <button class="btn-submit" onclick="actualizarDatosTelemetria()">⚡ REGISTRAR Y EJECUTAR ESCANEO CLÍNICO</button>
+                <button class="btn-submit" onclick="actualizarDatosTelemetria()">⚡ APLICAR TELEMETRÍA Y ESCANEAR</button>
             </div>
         </div>
 
@@ -348,19 +429,19 @@
             </div>
         </div>
 
-        <!-- CENTRO: SILUETA ANATÓMICA REAL VECTORIAL CON LÁSER Y ZOOM -->
+        <!-- CENTRO: SILUETA CON RADAR, LÁSER Y ZOOM INTERACTIVO -->
         <div class="body-scan-container" id="scanContainer">
-            <div class="scan-title">ANATOMICAL WIREFRAME SCAN</div>
+            <div class="scan-title">ANATOMICAL RADAR & LASER SCANNER</div>
             
+            <div class="radar-effect" id="radarEffect"></div>
             <div class="laser-beam" id="laserBeam"></div>
 
-            <!-- Silueta Humana Vectorial Detallada en SVG -->
             <svg class="human-silhouette-svg" id="humanSilhouette" viewBox="0 0 100 220">
                 <!-- CABEZA Y CUELLO -->
                 <path d="M 50 12 C 43 12 39 17 39 24 C 39 31 44 36 50 36 C 56 36 61 31 61 24 C 61 17 57 12 50 12 Z M 46 37 L 46 43 L 54 43 L 54 37 Z" 
                       class="body-zone" onclick="enfocarZona('cabeza')" title="Sistema Neurológico" />
                 
-                <!-- TÓRAX / PECHO (Cardiovascular) -->
+                <!-- TÓRAX / PECHO -->
                 <path d="M 37 46 C 35 46 31 52 32 65 C 33 78 36 84 38 84 L 62 84 C 64 84 67 78 68 65 C 69 52 65 46 63 46 Z" 
                       class="body-zone" onclick="enfocarZona('pecho')" title="Sistema Cardiovascular" />
                 
@@ -368,46 +449,47 @@
                 <path d="M 39 86 L 61 86 C 62 95 62 108 61 115 L 39 115 C 38 108 38 95 39 86 Z" 
                       class="body-zone" onclick="enfocarZona('extremidades')" />
                 
-                <!-- EXTREMIDADES SUPERIORES (BRAZOS) -->
+                <!-- EXTREMIDADES SUPERIORES -->
                 <path d="M 34 47 L 24 50 L 19 90 L 23 92 L 29 60 L 35 49 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
                 <path d="M 66 47 L 76 50 L 81 90 L 77 92 L 71 60 L 65 49 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
                 
-                <!-- EXTREMIDADES INFERIORES (PIERNAS) -->
+                <!-- EXTREMIDADES INFERIORES -->
                 <path d="M 40 117 L 48 117 L 45 185 L 40 185 L 38 135 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
                 <path d="M 60 117 L 52 117 L 55 185 L 60 185 L 62 135 Z" class="body-zone" onclick="enfocarZona('extremidades')" />
             </svg>
-            <div style="font-size: 10px; color: var(--accent-cyan); letter-spacing: 1px; margin-top: 8px; z-index: 2;">⚡ HAZ CLIC EN LA SILUETA PARA ZOOM Y LÁSER</div>
+            <div style="font-size: 10px; color: var(--accent-cyan); letter-spacing: 1px; margin-top: 8px; z-index: 2;">⚡ HAZ CLIC EN CUALQUIER ZONA PARA ESCANEO RADAR</div>
         </div>
 
-        <!-- PANEL DERECHO 1: Temperatura y Sueño (Neurológico) -->
+        <!-- PANEL DERECHO 1: Temperatura y Sueño -->
         <div class="hud-panel" id="panel-neuro" style="grid-row: 2;">
             <div class="panel-title"><span>NEURO / BIOMETRICS</span><span>WELLBEING</span></div>
             <div style="font-size: 11px; color: var(--text-muted);">TEMPERATURA CORPORAL</div>
             <div style="font-size: 22px; font-weight: bold; margin: 3px 0;" id="disp-temp">36.7 °C</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">HORAS DE SUEÑO</div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 16px; color: var(--accent-cyan);" id="disp-sleep">7.5 hrs</span>
-                <span class="history-tag">Calidad: 8/10</span>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">EFICIENCIA DE SUEÑO</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 15px; color: var(--accent-cyan);" id="disp-sleep">7.5 hrs</span>
+                <span class="history-tag">Óptimo</span>
             </div>
+            <div class="stat-bar-container"><div class="stat-bar-fill" id="sleepBar" style="width: 85%;"></div></div>
         </div>
 
-        <!-- PANEL DERECHO 2: Radiación y Ánimo (Entorno) -->
+        <!-- PANEL DERECHO 2: Radiación y Ánimo -->
         <div class="hud-panel" id="panel-env" style="grid-row: 3;">
             <div class="panel-title"><span>HABITAT / PSYCHO</span><span>ENV-02</span></div>
-            <div style="font-size: 11px; color: var(--text-muted);">TASA DE RADIACIÓN</div>
+            <div style="font-size: 11px; color: var(--text-muted);">TASA DE RADIACIÓN CABINA</div>
             <div style="font-size: 18px; font-weight: bold; margin: 2px 0;" id="disp-rad">0.14 mSv/h</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">ESTADO DE ÁNIMO</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">ESTADO PSICOSOCIAL</div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 15px; color: var(--accent-cyan);" id="disp-mood">😌 Calmado</span>
-                <span class="history-tag">Estable</span>
+                <span class="history-tag">Seguro</span>
             </div>
         </div>
 
         <!-- PANEL INFERIOR: Diagnóstico Automatizado -->
         <div class="diagnostic-box">
             <div>
-                <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">GUÍA CLÍNICA DE TRATAMIENTO AUTOMATIZADO (NASA HRP)</div>
-                <div id="diagnostico-texto" style="font-size: 13px; margin-top: 4px; color: #dbeafe;">Sistema operativo estable. Seleccione una zona anatómica en la silueta para activar telemetría láser.</div>
+                <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">MOTOR CLÍNICO AUTOMATIZADO (NASA HRP GUIDELINES)</div>
+                <div id="diagnostico-texto" style="font-size: 13px; margin-top: 4px; color: #dbeafe;">Sistema en línea. Selecciona un tripulante o haz clic en la silueta anatómica para iniciar escaneo activo.</div>
             </div>
             <div>
                 <span class="status-pill" id="badge-estado">VERDE - ÓPTIMO</span>
@@ -417,15 +499,32 @@
     </div>
 
     <script>
-        let datosActuales = {
-            bp: "118/76",
-            hr: 72,
-            glu: 88,
-            temp: 36.7,
-            sleep: 7.5,
-            mood: "😌 Calmado",
-            rad: 0.14
+        // Perfiles preconfigurados para simular múltiples astronautas
+        const perfilesAstronautas = {
+            commander: { bp: "118/76", hr: 72, glu: 88, temp: 36.7, sleep: 7.5, mood: "😌 Calmado", rad: 0.14 },
+            pilot: { bp: "135/88", hr: 98, glu: 112, temp: 37.2, sleep: 4.0, mood: "😰 Ansioso", rad: 0.28 },
+            specialist: { bp: "120/80", hr: 65, glu: 92, temp: 36.6, sleep: 8.0, mood: "🎯 Enfocado", rad: 0.12 }
         };
+
+        let datosActuales = { ...perfilesAstronautas.commander };
+
+        function cargarAstronauta(perfil) {
+            // Actualizar botones activos
+            document.querySelectorAll('.crew-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Cargar datos del perfil seleccionado en el formulario
+            const p = perfilesAstronautas[perfil];
+            document.getElementById('input-bp').value = p.bp;
+            document.getElementById('input-hr').value = p.hr;
+            document.getElementById('input-glu').value = p.glu;
+            document.getElementById('input-temp').value = p.temp;
+            document.getElementById('input-sleep').value = p.sleep;
+            document.getElementById('input-mood').value = p.mood;
+            document.getElementById('input-rad').value = p.rad;
+
+            actualizarDatosTelemetria();
+        }
 
         function actualizarDatosTelemetria() {
             datosActuales.bp = document.getElementById('input-bp').value;
@@ -436,6 +535,7 @@
             datosActuales.mood = document.getElementById('input-mood').value;
             datosActuales.rad = parseFloat(document.getElementById('input-rad').value);
 
+            // Reflejar en pantalla
             document.getElementById('disp-hr').innerText = datosActuales.hr;
             document.getElementById('disp-bp').innerText = datosActuales.bp + " mmHg";
             document.getElementById('disp-glu').innerText = datosActuales.glu + " mg/dL";
@@ -444,8 +544,11 @@
             document.getElementById('disp-mood').innerText = datosActuales.mood;
             document.getElementById('disp-rad').innerText = datosActuales.rad + " mSv/h";
 
+            // Ajustar barra de sueño visual (máximo 10 hrs)
+            let sleepPercent = Math.min((datosActuales.sleep / 10) * 100, 100);
+            document.getElementById('sleepBar').style.width = sleepPercent + "%";
+
             evaluarEstadoClinicoGlobal();
-            alert("⚡ Telemetría registrada y analizada por el motor clínico.");
         }
 
         function evaluarEstadoClinicoGlobal() {
@@ -456,15 +559,17 @@
             paneles.forEach(p => p.classList.remove('alert-zone'));
 
             if (datosActuales.hr > 100 || datosActuales.sleep < 5 || datosActuales.rad > 0.25 || datosActuales.glu > 140) {
-                txtDiag.innerText = "⚠️ [ALERTA CRÍTICA]: Parámetros fuera de rango seguro. Active protocolo de descanso inmediato y comuníquese con el Cirujano de Vuelo.";
+                txtDiag.innerText = "⚠️ [ALERTA MÉDICA CRÍTICA]: Valores anómalos detectados. Activar protocolo de contramedidas y aislamiento en cabina de descanso.";
                 badge.style.background = "#7f1d1d";
                 badge.style.color = "#fca5a5";
                 badge.style.borderColor = "#ef4444";
                 badge.innerText = "ROJO - RIESGO";
                 
                 if(datosActuales.hr > 100) document.getElementById('panel-cardio').classList.add('alert-zone');
+                if(datosActuales.rad > 0.25) document.getElementById('panel-env').classList.add('alert-zone');
+                if(datosActuales.sleep < 5) document.getElementById('panel-neuro').classList.add('alert-zone');
             } else {
-                txtDiag.innerText = `💡 Estado estable. Ánimo reportado: ${datosActuales.mood}. Parámetros biológicos dentro de los límites operativos de la misión.`;
+                txtDiag.innerText = `💡 Estado estable. Tripulante reporta estado: ${datosActuales.mood}. Parámetros compatibles con operaciones orbitales prolongadas.`;
                 badge.style.background = "#065f46";
                 badge.style.color = "#34d399";
                 badge.style.borderColor = "#10b981";
@@ -475,11 +580,15 @@
         function enfocarZona(zona) {
             const silhouetteSvg = document.getElementById('humanSilhouette');
             const laser = document.getElementById('laserBeam');
+            const radar = document.getElementById('radarEffect');
             const paneles = document.querySelectorAll('.hud-panel');
             
             paneles.forEach(p => p.classList.remove('highlighted'));
             silhouetteSvg.className.baseVal = "human-silhouette-svg";
-            laser.classList.add('active'); // Activar láser de escaneo
+            
+            // Activar efectos visuales interactivos de escaneo
+            laser.classList.add('active');
+            radar.classList.add('active');
 
             const txtDiag = document.getElementById('diagnostico-texto');
 
@@ -487,17 +596,17 @@
                 silhouetteSvg.classList.add('zoom-cabeza');
                 document.getElementById('panel-neuro').classList.add('highlighted');
                 document.getElementById('panel-env').classList.add('highlighted');
-                txtDiag.innerText = `🧠 [ESCANEO NEUROLÓGICO Y PSICOSOCIAL]: Horas de sueño: ${datosActuales.sleep}h | Ánimo: ${datosActuales.mood}. Ritmo circadiano estable. Guía: Mantener ciclo de 8h y protocolo de aislamiento acústico.`;
+                txtDiag.innerText = `🧠 [ANÁLISIS NEUROLÓGICO Y PSICOSOCIAL]: Sueño acumulado: ${datosActuales.sleep}h | Estado: ${datosActuales.mood}. Guía clínica: Aplicar terapia de luz azul y descanso circadiano obligatorio.`;
             } else if (zona === 'pecho') {
                 silhouetteSvg.classList.add('zoom-pecho');
                 document.getElementById('panel-cardio').classList.add('highlighted');
                 document.getElementById('panel-pressure').classList.add('highlighted');
-                txtDiag.innerText = `🫀 [ESCANEO CARDIOVASCULAR]: Frecuencia: ${datosActuales.hr} BPM | Presión: ${datosActuales.bp} mmHg | Glucosa: ${datosActuales.glu} mg/dL. Redistribución de fluidos en microgravedad bajo control.`;
+                txtDiag.innerText = `🫀 [ANÁLISIS CARDIOVASCULAR]: Frecuencia: ${datosActuales.hr} BPM | Presión: ${datosActuales.bp} mmHg | Glucosa: ${datosActuales.glu} mg/dL. Guía clínica: Mantener hidratación con electrolitos compensatorios.`;
             } else if (zona === 'extremidades') {
                 silhouetteSvg.classList.add('zoom-extremidades');
                 document.getElementById('panel-neuro').classList.add('highlighted');
                 document.getElementById('panel-cardio').classList.add('highlighted');
-                txtDiag.innerText = `🦾 [ESCANEO FÍSICO / ENTORNO]: Temperatura: ${datosActuales.temp}°C | Tasa de radiación: ${datosActuales.rad} mSv/h. Guía: Completar rutina obligatoria en la máquina ARED.`;
+                txtDiag.innerText = `🦾 [ANÁLISIS MUSCULOESQUELETICO Y RADIACIÓN]: Temperatura: ${datosActuales.temp}°C | Radiación: ${datosActuales.rad} mSv/h. Guía clínica: Ejecutar 2 horas en la máquina de resistencia ARED.`;
             }
         }
     </script>
